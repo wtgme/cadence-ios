@@ -1,19 +1,9 @@
-//
-//  CadenceTests.swift
-//  CadenceTests
-//
-//  Created by Tao Wang on 17/05/2026.
-//
-
 import Testing
 @testable import Cadence
 
+/// Placeholder for module-level smoke tests; per-module tests live in their own files.
 struct CadenceTests {
-
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
+    @Test func placeholder() {
+        #expect(Scene.running.displayName == "Running")
     }
-
 }

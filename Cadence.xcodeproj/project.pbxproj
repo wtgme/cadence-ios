@@ -397,8 +397,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Cadence reads heart rate, HRV, sleep, SpO2, steps and activity to generate music that matches your physiological state.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Cadence does not write to HealthKit; this entry is required by HealthKit.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cadence detects activity (walking, running, commuting) and current weather, which shape generated music.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Continuous location lets Cadence keep adapting music to your activity in the background.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "audio location fetch processing";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -428,8 +433,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Cadence reads heart rate, HRV, sleep, SpO2, steps and activity to generate music that matches your physiological state.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Cadence does not write to HealthKit; this entry is required by HealthKit.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cadence detects activity (walking, running, commuting) and current weather, which shape generated music.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Continuous location lets Cadence keep adapting music to your activity in the background.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "audio location fetch processing";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

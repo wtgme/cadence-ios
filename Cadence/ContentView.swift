@@ -1,61 +1,21 @@
-//
-//  ContentView.swift
-//  Cadence
-//
-//  Created by Tao Wang on 17/05/2026.
-//
-
 import SwiftUI
-import SwiftData
 
-struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+struct RootView: View {
+    @StateObject private var nav = OnboardingNavViewModel()
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+        Group {
+            switch nav.startDestination {
+            case .none:
+                ZStack { CadenceColor.bg.ignoresSafeArea() }
+            case .welcome:
+                OnboardingFlowView(start: .welcome, onFinished: nav.markComplete)
+            case .apiSetupFirstRun:
+                ApiSetupScreen(isFirstRun: true) { nav.markApiSetupSeen() }
+            case .player:
+                PlayerScreen()
             }
         }
+        .animation(.easeInOut, value: nav.startDestination)
     }
-}
-
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }

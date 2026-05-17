@@ -1,32 +1,15 @@
-//
-//  CadenceApp.swift
-//  Cadence
-//
-//  Created by Tao Wang on 17/05/2026.
-//
-
 import SwiftUI
-import SwiftData
 
 @main
 struct CadenceApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    init() {
+        DIContainer.shared.bootstrap()
+    }
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
-    var body: some Scene {
+    var body: some SwiftUI.Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .preferredColorScheme(.dark)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
