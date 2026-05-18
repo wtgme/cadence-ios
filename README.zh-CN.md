@@ -169,18 +169,16 @@ xcodebuild -scheme Cadence -destination 'platform=iOS Simulator,name=iPhone 17,O
 
 Clean Architecture · MVVM · 轻量级内置依赖注入 · Swift Concurrency + Combine · SwiftUI · AVPlayer
 
-```
-Cadence/
-├── Models/      Scene · SensorState · GeneratedSong · SongParams · MentalState
-├── Domain/      SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator
-├── Data/
-│   ├── Api/     GenerationRepository · MusicRepository · SongParams（Codable）
-│   ├── Sensor/  HealthKit · CoreLocation · Open-Meteo · 睡眠数据接入
-│   └── …/       Settings · Adjustment · Taste · Session · Onboarding 仓库
-├── Audio/       MusicOrchestrator · AudioBufferManager · MusicPlayer
-├── DI/          内置 DIContainer（Factory 风格）
-└── UI/         SwiftUI 界面（Player、Settings、Debug、Onboarding）+ ViewModel
-```
+| 层 | 内容 |
+|---|---|
+| `Models/` | `Scene`、`SensorState`、`GeneratedSong`、`SongParams`、`MentalState` |
+| `Domain/` | `SceneDetector`、`SceneStateMachine`、`PromptBuilder`、`ReadinessCalculator` |
+| `Data/Api/` | `GenerationRepository`、`MusicRepository`、`SongGenerationBackend` |
+| `Data/Sensor/` | HealthKit · CoreLocation · Open-Meteo · 睡眠数据接入 |
+| `Data/…/` | Settings、Adjustment、Taste、Session、Onboarding 仓库 |
+| `Audio/` | `MusicOrchestrator`、`AudioBufferManager`、`MusicPlayer` |
+| `DI/` | 内置 `DIContainer`（Factory 风格） |
+| `UI/` | SwiftUI 界面（Player、Settings、Debug、Onboarding）+ ViewModel |
 
 ---
 

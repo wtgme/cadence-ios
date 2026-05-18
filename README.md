@@ -169,18 +169,16 @@ xcodebuild -scheme Cadence -destination 'platform=iOS Simulator,name=iPhone 17,O
 
 Clean Architecture · MVVM · Lightweight in-tree DI · Swift Concurrency + Combine · SwiftUI · AVPlayer
 
-```
-Cadence/
-├── Models/      Scene · SensorState · GeneratedSong · SongParams · MentalState
-├── Domain/      SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator
-├── Data/
-│   ├── Api/     GenerationRepository · MusicRepository · SongParams (Codable)
-│   ├── Sensor/  HealthKit · CoreLocation · Open-Meteo · sleep integrations
-│   └── …/       Settings · Adjustment · Taste · Session · Onboarding repositories
-├── Audio/       MusicOrchestrator · AudioBufferManager · MusicPlayer
-├── DI/          In-tree DIContainer (Factory-style)
-└── UI/         SwiftUI screens (Player, Settings, Debug, Onboarding) + ViewModels
-```
+| Layer | What lives here |
+|---|---|
+| `Models/` | `Scene`, `SensorState`, `GeneratedSong`, `SongParams`, `MentalState` |
+| `Domain/` | `SceneDetector`, `SceneStateMachine`, `PromptBuilder`, `ReadinessCalculator` |
+| `Data/Api/` | `GenerationRepository`, `MusicRepository`, `SongGenerationBackend` |
+| `Data/Sensor/` | HealthKit · CoreLocation · Open-Meteo · sleep integrations |
+| `Data/…/` | Settings, Adjustment, Taste, Session, Onboarding repositories |
+| `Audio/` | `MusicOrchestrator`, `AudioBufferManager`, `MusicPlayer` |
+| `DI/` | In-tree `DIContainer` (Factory-style) |
+| `UI/` | SwiftUI screens (Player, Settings, Debug, Onboarding) + ViewModels |
 
 ---
 
