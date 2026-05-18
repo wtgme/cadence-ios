@@ -31,15 +31,17 @@ struct WelcomeScreen: View {
     }
 
     private var heroText: Text {
+        // `.foregroundStyle` on `Text` (returning `Text` for concatenation) is iOS 17+.
+        // Use `.foregroundColor` for iOS 16 compatibility.
         Text("Music that\nmoves with ")
             .font(CadenceFont.displayLarge)
-            .foregroundStyle(CadenceColor.text) +
+            .foregroundColor(CadenceColor.text) +
         Text("you")
             .font(CadenceFont.displayLarge)
-            .foregroundStyle(CadenceColor.orange) +
+            .foregroundColor(CadenceColor.orange) +
         Text(".")
             .font(CadenceFont.displayLarge)
-            .foregroundStyle(CadenceColor.text)
+            .foregroundColor(CadenceColor.text)
     }
 }
 

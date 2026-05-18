@@ -53,7 +53,10 @@ final class PlayerViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 if state == .buffering {
-                    self?.generationStartMs = Int64(Date().timeIntervalSince1970 * 1000)
+                    // Defer to next runloop so this can't fire during a body update.
+                    DispatchQueue.main.async {
+                        self?.generationStartMs = Int64(Date().timeIntervalSince1970 * 1000)
+                    }
                 }
             }
             .store(in: &cancellables)

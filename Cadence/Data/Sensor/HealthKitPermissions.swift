@@ -3,8 +3,13 @@ import HealthKit
 
 enum HealthKitPermissions {
 
-    /// All HealthKit types Cadence needs read access to. Mirrors the Android HEALTH_CONNECT_PERMISSIONS set.
-    static var readTypes: Set<HKObjectType> {
+    /// Apple recommends a single HKHealthStore per app; creating one per call adds
+    /// noticeable setup overhead on the first auth request.
+    static let sharedStore = HKHealthStore()
+
+    /// All HealthKit types Cadence needs read access to. Mirrors the Android
+    /// HEALTH_CONNECT_PERMISSIONS set. Resolved once at startup.
+    static let readTypes: Set<HKObjectType> = {
         var types: Set<HKObjectType> = []
         let quantityIds: [HKQuantityTypeIdentifier] = [
             .heartRate,
@@ -31,12 +36,11 @@ enum HealthKitPermissions {
         }
         types.insert(HKObjectType.workoutType())
         return types
-    }
+    }()
 
     static func requestAuthorization() async throws -> Bool {
         guard HKHealthStore.isHealthDataAvailable() else { return false }
-        let store = HKHealthStore()
-        try await store.requestAuthorization(toShare: [], read: readTypes)
+        try await sharedStore.requestAuthorization(toShare: [], read: readTypes)
         return true
     }
 }

@@ -228,7 +228,9 @@ final class MusicOrchestrator: ObservableObject {
     private func onSceneConfirmed(_ scene: Scene) {
         Self.log.debug("Scene confirmed: \(scene.displayName)")
         let previous = currentScene
-        currentScene = scene
+        // Defer the @Published mutation so it can't fire during a SwiftUI body
+        // computation (would emit "Publishing changes from within view updates").
+        DispatchQueue.main.async { self.currentScene = scene }
         bufferManager.updateScene(scene)
         sensorStateCollector.locationRepository.updateForScene(scene)
         if playbackStarted, let prev = previous, prev != scene {
@@ -257,10 +259,12 @@ final class MusicOrchestrator: ObservableObject {
             .sink { [weak self] count in
                 guard let self else { return }
                 guard self.playbackStarted else { return }
+                // Defer to next runloop tick to avoid mutating @Published during
+                // SwiftUI body evaluation.
                 if count == 0 && self.playbackState == .playing {
-                    self.playbackState = .buffering
+                    DispatchQueue.main.async { self.playbackState = .buffering }
                 } else if count > 0 && self.playbackState == .buffering {
-                    self.playbackState = .playing
+                    DispatchQueue.main.async { self.playbackState = .playing }
                 }
             }
     }

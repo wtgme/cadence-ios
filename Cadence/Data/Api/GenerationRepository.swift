@@ -10,6 +10,11 @@ protocol GenerationRepository: AnyObject {
     var translatedMentalStatePublisher: AnyPublisher<MentalState?, Never> { get }
     var translatedMentalStateValue: MentalState? { get }
 
+    /// Diagnostic: human-readable status string from the most recent Step 1a attempt.
+    /// Examples: "OK", "No API key", "Parse failed: keys=[summary, …]", "HTTP 401",
+    /// "Network error". Surface in debug UI so users can see why the panel is blank.
+    var step1aStatusPublisher: AnyPublisher<String?, Never> { get }
+
     /// Step 1 (full) — Biometric context → MentalState → SongParams. Always returns usable params.
     func translateMetrics(metricsContext: String) async throws -> SongParams
 

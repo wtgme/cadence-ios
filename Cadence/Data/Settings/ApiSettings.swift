@@ -61,13 +61,21 @@ final class ApiSettingsRepository: ObservableObject {
     }
 
     private static func load(store: UserDefaults, defaults: ApiSettings) -> ApiSettings {
-        ApiSettings(
-            signal2StyleBaseUrl: store.string(forKey: Key.s2sBaseUrl) ?? defaults.signal2StyleBaseUrl,
-            signal2StyleApiKey:  store.string(forKey: Key.s2sApiKey)  ?? defaults.signal2StyleApiKey,
-            signal2StyleModel:   store.string(forKey: Key.s2sModel)   ?? defaults.signal2StyleModel,
-            songGenBaseUrl:      store.string(forKey: Key.sgBaseUrl)  ?? defaults.songGenBaseUrl,
-            songGenApiKey:       store.string(forKey: Key.sgApiKey)   ?? defaults.songGenApiKey,
-            songGenModel:        store.string(forKey: Key.sgModel)    ?? defaults.songGenModel,
+        // Empty stored strings (e.g. from a previous install whose BuildConfig defaults
+        // were blank, persisted unchanged through onboarding) are treated as "unset"
+        // so the current BuildConfig defaults take effect on the next launch.
+        func read(_ key: String, fallback: String) -> String {
+            let stored = store.string(forKey: key)
+            if let s = stored, !s.trimmingCharacters(in: .whitespaces).isEmpty { return s }
+            return fallback
+        }
+        return ApiSettings(
+            signal2StyleBaseUrl: read(Key.s2sBaseUrl, fallback: defaults.signal2StyleBaseUrl),
+            signal2StyleApiKey:  read(Key.s2sApiKey,  fallback: defaults.signal2StyleApiKey),
+            signal2StyleModel:   read(Key.s2sModel,   fallback: defaults.signal2StyleModel),
+            songGenBaseUrl:      read(Key.sgBaseUrl,  fallback: defaults.songGenBaseUrl),
+            songGenApiKey:       read(Key.sgApiKey,   fallback: defaults.songGenApiKey),
+            songGenModel:        read(Key.sgModel,    fallback: defaults.songGenModel),
         )
     }
 }

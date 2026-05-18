@@ -57,11 +57,7 @@ struct PlayerSheetContent: View {
 
                 if !viewModel.songHistory.isEmpty {
                     Divider().padding(.vertical, 4)
-                    Text("GENERATED TRACKS · \(viewModel.songHistory.count)")
-                        .font(CadenceFont.labelMedium).foregroundStyle(CadenceColor.textSecondary)
-                    ForEach(viewModel.songHistory.prefix(10)) { song in
-                        GeneratedTrackCard(song: song)
-                    }
+                    GeneratedTracksSection(songs: viewModel.songHistory)
                 }
 
                 Divider().padding(.vertical, 4)
@@ -91,6 +87,48 @@ struct StatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 14).fill(CadenceColor.surface1))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.07), lineWidth: 1))
+    }
+}
+
+/// Collapsible "GENERATED TRACKS" section. Tap the header to expand/collapse; once
+/// expanded the first 5 cards are shown with a "+N more" link to reveal the rest.
+/// Mirrors the Android implementation.
+struct GeneratedTracksSection: View {
+    let songs: [GeneratedSong]
+    @State private var sectionExpanded = false
+    @State private var showAll = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { sectionExpanded.toggle() } }) {
+                HStack {
+                    Text("GENERATED TRACKS · \(songs.count)")
+                        .font(CadenceFont.labelMedium)
+                        .foregroundStyle(CadenceColor.textSecondary)
+                    Spacer()
+                    Text(sectionExpanded ? "collapse" : "expand")
+                        .font(CadenceFont.labelSmall)
+                        .foregroundStyle(CadenceColor.sceneGlow(for: nil).opacity(0.6))
+                }
+            }
+            .buttonStyle(.plain)
+
+            if sectionExpanded {
+                let visible = showAll ? songs : Array(songs.prefix(5))
+                ForEach(visible) { song in
+                    GeneratedTrackCard(song: song)
+                }
+                if songs.count > 5 {
+                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { showAll.toggle() } }) {
+                        Text(showAll ? "show less" : "+\(songs.count - 5) more")
+                            .font(CadenceFont.labelSmall)
+                            .foregroundStyle(CadenceColor.sceneGlow(for: nil).opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                }
+            }
+        }
     }
 }
 

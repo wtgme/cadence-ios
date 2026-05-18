@@ -10,6 +10,7 @@ struct AdjustmentPanel: View {
 
     @State private var freeTextValue: String = ""
     @State private var sliderPosition: Double = 0
+    @FocusState private var freeTextFocused: Bool
 
     private let genres = ["jazz", "electronic", "pop", "rock", "ambient", "folk", "hip-hop", "classical"]
 
@@ -66,7 +67,15 @@ struct AdjustmentPanel: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .submitLabel(.send)
+                        .focused($freeTextFocused)
                         .onSubmit(submit)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") { freeTextFocused = false }
+                                    .foregroundStyle(CadenceColor.blue)
+                            }
+                        }
                     Button(action: submit) {
                         Image(systemName: "paperplane.fill")
                             .foregroundStyle(.white)
@@ -100,6 +109,7 @@ struct AdjustmentPanel: View {
         if !freeTextValue.isEmpty {
             onFreeText(freeTextValue)
             freeTextValue = ""
+            freeTextFocused = false
         }
     }
 

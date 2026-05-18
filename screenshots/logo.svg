@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="256" height="256">
+  <defs>
+    <linearGradient id="cadenceBg" x1="0" y1="0" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0D0B1F"/>
+      <stop offset="0.5" stop-color="#3B0764"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <rect width="108" height="108" rx="22" fill="url(#cadenceBg)"/>
+  <!-- EKG heartbeat pulse (left half) -->
+  <path d="M 22,54 L 31,54 L 35,46 L 40,63 L 44,39 L 49,70 L 53,54 L 58,54"
+        fill="none" stroke="#ffffff" stroke-width="3.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Waveform bars (right half) -->
+  <path d="M 65,44 L 65,64" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M 74,32 L 74,76" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M 83,38 L 83,70" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"/>
+</svg>

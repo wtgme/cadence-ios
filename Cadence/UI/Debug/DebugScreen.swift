@@ -3,6 +3,7 @@ import SwiftUI
 struct DebugScreen: View {
     @ObservedObject private var orchestrator = DIContainer.shared.musicOrchestrator!
     @ObservedObject private var sensorCollector = DIContainer.shared.sensorStateCollector!
+    @State private var step1aStatus: String?
 
     var body: some View {
         ZStack {
@@ -50,9 +51,18 @@ struct DebugScreen: View {
                     } else {
                         Text("(awaiting LLM)").font(CadenceFont.bodySmall).foregroundStyle(CadenceColor.textTertiary)
                     }
+
+                    section("Step 1a Status")
+                    Text(step1aStatus ?? "(no calls yet)")
+                        .font(CadenceFont.bodySmall)
+                        .foregroundStyle(CadenceColor.textPrimary)
+                        .textSelection(.enabled)
                 }
                 .padding(24)
             }
+        }
+        .onReceive(DIContainer.shared.generationRepository.step1aStatusPublisher) { status in
+            step1aStatus = status
         }
     }
 

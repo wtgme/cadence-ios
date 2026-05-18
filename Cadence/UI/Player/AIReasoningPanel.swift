@@ -5,6 +5,7 @@ struct AIReasoningPanel: View {
     let mentalState: MentalState?
     let songParams: SongParams?
     @State private var expanded = false
+    @State private var step1aStatus: String?
 
     var body: some View {
         Button(action: { expanded.toggle() }) {
@@ -31,7 +32,15 @@ struct AIReasoningPanel: View {
                 if let ms = mentalState {
                     MentalStateRow(ms: ms)
                 } else {
-                    ProgressView().tint(CadenceColor.sceneGlow(for: nil))
+                    VStack(alignment: .leading, spacing: 6) {
+                        ProgressView().tint(CadenceColor.sceneGlow(for: nil))
+                        if let status = step1aStatus, !status.isEmpty {
+                            Text(status)
+                                .font(CadenceFont.labelSmall)
+                                .foregroundStyle(CadenceColor.textTertiary)
+                                .textSelection(.enabled)
+                        }
+                    }
                 }
                 Divider().padding(.vertical, 10)
                 sectionTitle("RECOMMENDATION: MUSIC STYLES")
@@ -71,6 +80,9 @@ struct AIReasoningPanel: View {
             )
         }
         .buttonStyle(.plain)
+        .onReceive(DIContainer.shared.generationRepository.step1aStatusPublisher) { status in
+            step1aStatus = status
+        }
     }
 
     private func sectionTitle(_ text: String) -> some View {

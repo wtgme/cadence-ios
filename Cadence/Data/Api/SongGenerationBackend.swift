@@ -16,8 +16,12 @@ final class SongGenerationBackend: GenerationBackend {
         self.cacheDir = cacheDir
         self.apiSettings = apiSettings
         let cfg = URLSessionConfiguration.default
-        cfg.timeoutIntervalForRequest = 30
+        // The streaming server sends 0x00 heartbeat bytes while warming up; first real
+        // audio byte can take 30–60s. URLSession's per-request timeout is the "no bytes
+        // for N seconds" budget, not total time — keep it generous.
+        cfg.timeoutIntervalForRequest = 120
         cfg.timeoutIntervalForResource = 10 * 60
+        cfg.waitsForConnectivity = true
         self.session = URLSession(configuration: cfg)
     }
 
@@ -187,14 +191,33 @@ final class SongGenerationBackend: GenerationBackend {
 
                     var buf: [UInt8] = []
                     buf.reserveCapacity(16 * 1024)
+                    // Three-byte lookahead window for sniffing the "ID3" header. Server
+                    // streams leading 0x00 heartbeat bytes; we wait until either an MPEG
+                    // frame-sync byte (0xFF) or the literal "ID3" tag header arrives, then
+                    // start writing from that point. Mirrors `findMp3Start` in Android.
+                    var sniff: [UInt8] = []
 
                     for try await byte in bytes {
                         if Task.isCancelled { break }
                         if !sawRealByte {
-                            // Skip server's 0x00 heartbeat bytes until we see ID3 tag (0x49 'I')
-                            // or MPEG sync (0xFF). For simplicity, skip leading zeros.
-                            if byte == 0 { continue }
-                            sawRealByte = true
+                            if byte == 0xFF {
+                                sawRealByte = true
+                                buf.append(byte)
+                            } else if byte == 0x49 /* 'I' */ {
+                                // Possible ID3 header start — begin sniffing.
+                                sniff = [byte]
+                            } else if sniff.count == 1 && byte == 0x44 /* 'D' */ {
+                                sniff.append(byte)
+                            } else if sniff.count == 2 && byte == 0x33 /* '3' */ {
+                                sniff.append(byte)
+                                sawRealByte = true
+                                buf.append(contentsOf: sniff)
+                                sniff.removeAll(keepingCapacity: false)
+                            } else {
+                                // Reset; this wasn't an ID3/sync byte.
+                                sniff.removeAll(keepingCapacity: false)
+                            }
+                            continue
                         }
                         buf.append(byte)
                         if buf.count >= 16 * 1024 {
@@ -206,6 +229,9 @@ final class SongGenerationBackend: GenerationBackend {
                     if !buf.isEmpty {
                         try handle.write(contentsOf: buf)
                         realBytesWritten += Int64(buf.count)
+                    }
+                    if !sawRealByte {
+                        errMsg = "Stream had no MP3 sync byte — server likely returned an error body"
                     }
                 }
             } catch {

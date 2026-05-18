@@ -19,6 +19,7 @@ final class MusicRepository: GenerationRepository {
 
     private let translatedSongParamsSubject = CurrentValueSubject<SongParams?, Never>(nil)
     private let translatedMentalStateSubject = CurrentValueSubject<MentalState?, Never>(nil)
+    private let step1aStatusSubject = CurrentValueSubject<String?, Never>(nil)
 
     var translatedSongParamsPublisher: AnyPublisher<SongParams?, Never> {
         translatedSongParamsSubject.eraseToAnyPublisher()
@@ -28,6 +29,9 @@ final class MusicRepository: GenerationRepository {
         translatedMentalStateSubject.eraseToAnyPublisher()
     }
     var translatedMentalStateValue: MentalState? { translatedMentalStateSubject.value }
+    var step1aStatusPublisher: AnyPublisher<String?, Never> {
+        step1aStatusSubject.eraseToAnyPublisher()
+    }
 
     init(
         backend: GenerationBackend,
@@ -57,6 +61,7 @@ final class MusicRepository: GenerationRepository {
         let apiKey = apiSettings.current.signal2StyleApiKey
         if apiKey.isEmpty {
             Self.log.warning("Signal2Style API key missing — using fallback params")
+            step1aStatusSubject.send("No API key — set one in Settings → STEP 1")
             let fallback = fallbackParams(metricsContext: metricsContext)
             publishTranslatedParams(fallback)
             return fallback
@@ -68,6 +73,7 @@ final class MusicRepository: GenerationRepository {
             Self.log.debug("Step 1a: arousal=\(mentalState?.arousal ?? -1), valence=\(mentalState?.valence ?? -99)")
 
             if let ms = mentalState, ms.arousal != nil, ms.valence != nil {
+                step1aStatusSubject.send("OK (arousal=\(ms.arousal!), valence=\(ms.valence!))")
                 if let params = try await translateMentalStateToParams(mentalState: ms, apiKey: apiKey, previousParams: nil) {
                     publishTranslatedParams(params)
                     return params
@@ -75,6 +81,7 @@ final class MusicRepository: GenerationRepository {
                 Self.log.warning("Step 1b failed — falling back to single-query")
             } else {
                 Self.log.warning("Step 1a failed — falling back to single-query")
+                step1aStatusSubject.send("Step 1a parse failed — model didn't return arousal/valence")
             }
 
             // Single-query fallback
@@ -85,6 +92,7 @@ final class MusicRepository: GenerationRepository {
             throw URLError(.cannotConnectToHost)
         } catch {
             Self.log.error("Signal2Style translation failed: \(String(describing: error))")
+            step1aStatusSubject.send("Network/HTTP error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -192,18 +200,25 @@ final class MusicRepository: GenerationRepository {
         var lastErrBody = ""
 
         for attempt in 1...maxAttempts {
+            let tStart = Date()
             do {
                 let (data, resp) = try await session.data(for: req)
+                let elapsedMs = Int(Date().timeIntervalSince(tStart) * 1000)
                 guard let http = resp as? HTTPURLResponse else { return nil }
                 if !(200..<300).contains(http.statusCode) {
                     lastCode = http.statusCode
                     lastErrBody = String(data: data.prefix(300), encoding: .utf8) ?? ""
-                    Self.log.warning("Signal2Style [\(label)] HTTP \(http.statusCode), \(lastErrBody)")
+                    Self.log.warning("Signal2Style [\(label)] ← HTTP \(http.statusCode) in \(elapsedMs)ms (attempt \(attempt)/\(maxAttempts)) — \(lastErrBody)")
                 } else {
+                    Self.log.debug("Signal2Style [\(label)] ← HTTP \(http.statusCode) in \(elapsedMs)ms (\(data.count)B)")
                     if let content = extractContent(data: data), !content.isEmpty {
+                        let preview = content.count <= 400 ? content : String(content.prefix(400))
+                        Self.log.debug("Signal2Style [\(label)] content (\(content.count)B): \(preview)")
                         return content
                     }
-                    Self.log.warning("Signal2Style [\(label)] empty content")
+                    let rawText = String(data: data, encoding: .utf8) ?? ""
+                    let snippet = String(rawText.prefix(400))
+                    Self.log.warning("Signal2Style [\(label)] empty content — body: \(snippet)")
                 }
             } catch {
                 lastCode = -1
@@ -215,7 +230,7 @@ final class MusicRepository: GenerationRepository {
             let backoffMs = UInt64(2000) << (attempt - 1)
             try? await Task.sleep(nanoseconds: backoffMs * 1_000_000)
         }
-        Self.log.warning("Signal2Style [\(label)] gave up after \(maxAttempts) attempts")
+        Self.log.warning("Signal2Style [\(label)] gave up after \(maxAttempts) attempts (last HTTP \(lastCode))")
         return nil
     }
 
@@ -260,20 +275,58 @@ final class MusicRepository: GenerationRepository {
     }
 
     private func parseMentalState(from json: String, rawLlmText: String) -> MentalState? {
-        guard let data = json.data(using: .utf8),
-              let map = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
-        let arousal = (map["arousal"] as? NSNumber)?.intValue
-        let valence = (map["valence"] as? NSNumber)?.intValue
-        if arousal == nil && valence == nil { return nil }
+        guard let data = json.data(using: .utf8) else {
+            Self.log.warning("parseMentalState: utf8 encode failed")
+            return nil
+        }
+        let parsed: Any
+        do {
+            parsed = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
+        } catch {
+            Self.log.warning("parseMentalState: JSON decode failed (\(error.localizedDescription)). Raw: \(rawLlmText.prefix(400))")
+            return nil
+        }
+        guard let map = parsed as? [String: Any] else {
+            Self.log.warning("parseMentalState: top-level not an object (got \(type(of: parsed))). Raw: \(rawLlmText.prefix(400))")
+            return nil
+        }
+        let arousal = Self.flexibleInt(map["arousal"])
+        let valence = Self.flexibleInt(map["valence"])
+        // Require at least arousal and valence for a usable mental state
+        if arousal == nil && valence == nil {
+            Self.log.warning("parseMentalState: arousal+valence both missing. Keys: \(Array(map.keys)). Raw: \(rawLlmText.prefix(400))")
+            return nil
+        }
         return MentalState(
             arousal: arousal,
             valence: valence,
-            stress: (map["stress"] as? NSNumber)?.intValue,
-            energy: (map["energy"] as? NSNumber)?.intValue,
-            focus: (map["focus"] as? NSNumber)?.intValue,
-            mood: (map["mood"] as? String)?.trimmingCharacters(in: .whitespaces),
+            stress: Self.flexibleInt(map["stress"]),
+            energy: Self.flexibleInt(map["energy"]),
+            focus:  Self.flexibleInt(map["focus"]),
+            mood:   (map["mood"] as? String)?.trimmingCharacters(in: .whitespaces),
             rawLlmText: rawLlmText,
         )
+    }
+
+    /// Coerce a JSON value to Int. Accepts NSNumber (typical), or strings like "5",
+    /// "+3", "5/10". Some free LLMs return numbers as strings, especially when
+    /// `response_format: json_object` falls back on a model that ignores schemas.
+    private static func flexibleInt(_ value: Any?) -> Int? {
+        if let n = value as? NSNumber {
+            // Reject NSNumber that's actually a wrapped bool (Swift bridges bools to NSNumber too).
+            if CFGetTypeID(n) != CFBooleanGetTypeID() { return n.intValue }
+        }
+        if let s = value as? String {
+            let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                          .replacingOccurrences(of: "+", with: "")
+            if let i = Int(trimmed) { return i }
+            // "5/10" or "5 out of 10" → leading int
+            if let range = trimmed.range(of: #"^-?\d+"#, options: .regularExpression),
+               let i = Int(trimmed[range]) {
+                return i
+            }
+        }
+        return nil
     }
 
     private func buildMentalStateJson(_ ms: MentalState) -> String {

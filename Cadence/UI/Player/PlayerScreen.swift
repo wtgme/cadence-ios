@@ -81,6 +81,7 @@ struct PlayerScreen: View {
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 24)
+            .keyboardAware()
 
             // Error banner
             if let err = viewModel.lastError, isActive {
@@ -131,11 +132,20 @@ struct PlayerScreen: View {
             SettingsScreen { showSettings = false }
                 .preferredColorScheme(.dark)
         }
+        .sheet(isPresented: $showSceneOverride) {
+            ActivityPickerMenu(
+                currentScene: viewModel.currentScene,
+                onSelect: { scene in viewModel.overrideScene(scene); showSceneOverride = false },
+                onAutoDetect: { viewModel.clearSceneOverride(); showSceneOverride = false },
+                onClose: { showSceneOverride = false },
+            )
+            .preferredColorScheme(.dark)
+        }
     }
 
     private var header: some View {
         HStack {
-            Button(action: { showSceneOverride.toggle() }) {
+            Button(action: { showSceneOverride = true }) {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(CadenceColor.textSecondary)
@@ -143,15 +153,6 @@ struct PlayerScreen: View {
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.08), lineWidth: 1))
             }
             .buttonStyle(.plain)
-            .popover(isPresented: $showSceneOverride) {
-                ActivityPickerMenu(
-                    currentScene: viewModel.currentScene,
-                    onSelect: { scene in viewModel.overrideScene(scene); showSceneOverride = false },
-                    onAutoDetect: { viewModel.clearSceneOverride(); showSceneOverride = false },
-                )
-                .preferredColorScheme(.dark)
-                .padding(.horizontal)
-            }
             Spacer()
             Text("CADENCE").font(CadenceFont.labelLarge).foregroundStyle(CadenceColor.orange)
             Spacer()

@@ -11,6 +11,8 @@ final class AudioBufferManager: ObservableObject {
     private static let log = Logger(subsystem: "io.cadence.music", category: "AudioBufferManager")
     private static let maxHistory = 50
     private static let maxConcurrentGenerations = 2
+    /// Minimum gap between two Step 1a estimates triggered by context shifts.
+    private static let mentalStateMinReestimateIntervalMs: Int64 = 60_000
 
     // ── Dependencies ──────────────────────────────────────────────────────
 
@@ -34,13 +36,23 @@ final class AudioBufferManager: ObservableObject {
     // ── State ─────────────────────────────────────────────────────────────
 
     private var generationEpoch: Int64 = 0
+    /// Mental state estimated by Step 1a. Set by `prime` at session start and refreshed by
+    /// `drainAndReprime` when context shifts (HR drift / scene change), subject to a
+    /// `mentalStateMinReestimateIntervalMs` floor to prevent rapid flapping. Cleared on
+    /// `cancelGeneration` and the next `prime`. Survives `applyUserAdjustment` — the user's
+    /// physiology didn't change, only their stated preference.
     private var sessionMentalState: MentalState?
+    /// Wall-clock timestamp (epoch ms) of the last successful Step 1a estimate, or the cache
+    /// load time when `prime` reused a persisted estimate. Used by `drainAndReprime` to gate
+    /// re-estimation so HR drift / scene change can't fire Step 1a back-to-back.
+    private var lastMentalStateEstimateMs: Int64 = 0
     private var sessionParams: SongParams?
     private var previousSongParams: SongParams?
     private var currentSensorState = SensorState()
     private var currentScene: Scene?
     private var activeTasks: [Task<Void, Never>] = []
     private let stateLock = NSLock()
+    private let generationSemaphore = GenerationSemaphore(limit: AudioBufferManager.maxConcurrentGenerations)
 
     // ── Published state for UI ────────────────────────────────────────────
 
@@ -111,6 +123,7 @@ final class AudioBufferManager: ObservableObject {
         sessionMentalState = nil
         sessionParams = nil
         previousSongParams = nil
+        lastMentalStateEstimateMs = 0
         stateLock.unlock()
 
         if let cached = await lastSessionParams.load(),
@@ -119,6 +132,9 @@ final class AudioBufferManager: ObservableObject {
             stateLock.lock()
             sessionParams = cached.params
             sessionMentalState = cached.mentalState
+            // Seed the timestamp from the persisted save time so a 10-min-old cache
+            // doesn't suppress re-estimation on the next drainAndReprime.
+            lastMentalStateEstimateMs = cached.savedAtMs
             stateLock.unlock()
             await MainActor.run {
                 self.currentSongParams = cached.params
@@ -136,6 +152,10 @@ final class AudioBufferManager: ObservableObject {
     }
 
     /// Cancel in-flight generation, flush queue, restart with new context. Bumps epoch.
+    ///
+    /// If the cached Step 1a estimate is older than `mentalStateMinReestimateIntervalMs`,
+    /// clear it so the next request re-runs Step 1a with fresh biometrics. Within the floor
+    /// the cached state is kept and only Step 1b will re-run (path 2 in `processNextRequest`).
     func drainAndReprime(sensorState: SensorState, scene: Scene?) {
         cancelActiveTasks()
         stateLock.lock(); generationEpoch += 1; stateLock.unlock()
@@ -144,6 +164,20 @@ final class AudioBufferManager: ObservableObject {
             self.chunksReady = 0
             self.lastError = nil
         }
+
+        let now = Int64(Date().timeIntervalSince1970 * 1000)
+        stateLock.lock()
+        let lastEstimate = lastMentalStateEstimateMs
+        let ageMs = now - lastEstimate
+        if lastEstimate > 0 && ageMs >= Self.mentalStateMinReestimateIntervalMs {
+            Self.log.debug("drainAndReprime: invalidating MentalState (age=\(ageMs / 1000)s) — Step 1a will re-run")
+            sessionMentalState = nil
+            sessionParams = nil
+        } else {
+            Self.log.debug("drainAndReprime: keeping MentalState (age=\(ageMs / 1000)s, floor=\(Self.mentalStateMinReestimateIntervalMs / 1000)s) — Step 1b only")
+        }
+        stateLock.unlock()
+
         enqueueGeneration(sensorState: sensorState, scene: scene)
     }
 
@@ -163,6 +197,7 @@ final class AudioBufferManager: ObservableObject {
         sessionMentalState = nil
         sessionParams = nil
         previousSongParams = nil
+        lastMentalStateEstimateMs = 0
         stateLock.unlock()
         flushQueue()
         DispatchQueue.main.async {
@@ -228,8 +263,16 @@ final class AudioBufferManager: ObservableObject {
             guard let self else { return }
             Self.log.debug("Worker started")
             for await _ in self.requestStream {
+                // Cap concurrent generations to MAX_CONCURRENT_GENERATIONS, matching
+                // Android's Semaphore. Without this, each worker's pre-trigger spawns
+                // another worker unconditionally and they run in parallel — which under
+                // failure conditions (no API key, server timeout) snowballs into many
+                // simultaneous in-flight requests.
+                await self.generationSemaphore.acquire()
                 let t: Task<Void, Never> = Task.detached { [weak self] in
-                    await self?.processNextRequest()
+                    guard let self else { return }
+                    await self.processNextRequest()
+                    await self.generationSemaphore.release()
                 }
                 self.stateLock.lock()
                 self.activeTasks.removeAll { $0.isCancelled }
@@ -275,6 +318,7 @@ final class AudioBufferManager: ObservableObject {
                     let newMS = musicRepository.translatedMentalStateValue
                     stateLock.lock()
                     sessionMentalState = newMS
+                    lastMentalStateEstimateMs = Int64(Date().timeIntervalSince1970 * 1000)
                     sessionParams = p
                     stateLock.unlock()
                     await lastSessionParams.save(params: p, mentalState: newMS, scene: scene, heartRate: state.heartRate)
@@ -291,6 +335,7 @@ final class AudioBufferManager: ObservableObject {
                 let newMS = musicRepository.translatedMentalStateValue
                 stateLock.lock()
                 sessionMentalState = newMS
+                lastMentalStateEstimateMs = Int64(Date().timeIntervalSince1970 * 1000)
                 sessionParams = p
                 stateLock.unlock()
                 await lastSessionParams.save(params: p, mentalState: newMS, scene: scene, heartRate: state.heartRate)
@@ -313,12 +358,20 @@ final class AudioBufferManager: ObservableObject {
         }
 
         // Pre-trigger next song generation NOW so its Step 1b overlaps with this song's Step 2.
+        // Skip the pre-trigger when we're in pure-fallback mode (no Signal2Style key): there
+        // is no Step 1b to overlap with, and chained pre-triggers under repeated streaming
+        // failure produce a flood of in-flight requests with no useful overlap.
+        let usingFallback = musicRepository.translatedMentalStateValue == nil
         stateLock.lock()
         previousSongParams = params
-        sessionParams = nil
+        if !usingFallback { sessionParams = nil }
         stateLock.unlock()
-        Self.log.debug("Worker: pre-triggering next song before Step 2")
-        requestContinuation.yield()
+        if !usingFallback {
+            Self.log.debug("Worker: pre-triggering next song before Step 2")
+            requestContinuation.yield()
+        } else {
+            Self.log.debug("Worker: fallback mode (no LLM) — skipping pre-trigger")
+        }
 
         var firstChunk = true
         for await chunk in musicRepository.generateAudioStream(params: params) {
@@ -344,6 +397,12 @@ final class AudioBufferManager: ObservableObject {
                 }
             case .complete:
                 Self.log.debug("Worker: stream complete")
+                // In fallback mode we deliberately don't pre-trigger before streaming,
+                // so trigger the next generation here once this one finishes successfully.
+                if usingFallback && myEpoch == epochNow {
+                    stateLock.lock(); sessionParams = nil; stateLock.unlock()
+                    requestContinuation.yield()
+                }
             }
         }
     }
