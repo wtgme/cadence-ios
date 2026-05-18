@@ -14,6 +14,8 @@
 
 **Cadence** 持续读取你的生理状态，并基于 *同质原理*（iso-principle）实时生成个性化的器乐音乐——先匹配你当前的状态，再逐步将其引导至期望的情绪目标。
 
+</div>
+
 本仓库是 [`wtgme/cadence`](https://github.com/wtgme/cadence)（Android）的 iOS 移植版本。目标是与 Android 版本保持功能对等，仅替换平台相关的层（Health Connect → HealthKit，Compose → SwiftUI，ExoPlayer → AVPlayer 等），同时保留完全相同的领域逻辑、提示词和生成流水线。
 
 ---

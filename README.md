@@ -14,6 +14,8 @@
 
 **Cadence** continuously reads your physiological state and generates personalised instrumental music in real time — grounded in the *iso-principle*: matching music to your current state before gradually steering it toward a desired emotional target.
 
+</div>
+
 This is the iOS port of [`wtgme/cadence`](https://github.com/wtgme/cadence) (Android). It targets feature parity with the Android version, swapping the platform-specific layers (Health Connect → HealthKit, Compose → SwiftUI, ExoPlayer → AVPlayer, etc.) while keeping the same domain logic, prompts, and generation pipeline.
 
 ---
