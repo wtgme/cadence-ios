@@ -18,6 +18,25 @@ This is the iOS port of [`wtgme/cadence`](https://github.com/wtgme/cadence) (And
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/1.png" width="160"/><br/><sub><b>Welcome</b><br/>Onboarding entry point</sub></td>
+    <td align="center"><img src="screenshots/2.png" width="160"/><br/><sub><b>Permissions</b><br/>HealthKit &amp; Location</sub></td>
+    <td align="center"><img src="screenshots/3.png" width="160"/><br/><sub><b>API Setup</b><br/>Bring your own keys</sub></td>
+    <td align="center"><img src="screenshots/4.png" width="160"/><br/><sub><b>Ready</b><br/>Start your first session</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/5.jpg" width="160"/><br/><sub><b>Scene Detection</b><br/>Auto-detected activity</sub></td>
+    <td align="center"><img src="screenshots/6.jpg" width="160"/><br/><sub><b>AI Reasoning</b><br/>Full inference chain</sub></td>
+    <td align="center"><img src="screenshots/7.jpg" width="160"/><br/><sub><b>Adjust Music</b><br/>Genre, energy, free-text prompt</sub></td>
+    <td align="center"><img src="screenshots/8.jpg" width="160"/><br/><sub><b>Adjust Scene</b><br/>Manual scene override</sub></td>
+  </tr>
+</table>
+
+---
+
 ## Scientific Background
 
 Music is among the most effective strategies for everyday emotion regulation. The **iso-principle** — matching music to a listener's psychophysiological state before shifting it toward a target — has controlled experimental support, producing significantly higher positive affect than passive listening. Neurobiologically, music modulates cortisol, autonomic arousal, and reward circuitry.

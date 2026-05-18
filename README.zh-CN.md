@@ -18,6 +18,25 @@
 
 ---
 
+## 应用截图
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/1.png" width="160"/><br/><sub><b>欢迎</b><br/>引导入口</sub></td>
+    <td align="center"><img src="screenshots/2.png" width="160"/><br/><sub><b>权限</b><br/>HealthKit 与位置</sub></td>
+    <td align="center"><img src="screenshots/3.png" width="160"/><br/><sub><b>API 设置</b><br/>接入你自己的密钥</sub></td>
+    <td align="center"><img src="screenshots/4.png" width="160"/><br/><sub><b>就绪</b><br/>开始你的第一次会话</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/5.jpg" width="160"/><br/><sub><b>场景识别</b><br/>自动检测当前活动</sub></td>
+    <td align="center"><img src="screenshots/6.jpg" width="160"/><br/><sub><b>AI 推理</b><br/>完整推理链</sub></td>
+    <td align="center"><img src="screenshots/7.jpg" width="160"/><br/><sub><b>调整音乐</b><br/>风格、能量、自由文本提示</sub></td>
+    <td align="center"><img src="screenshots/8.jpg" width="160"/><br/><sub><b>调整场景</b><br/>手动切换场景</sub></td>
+  </tr>
+</table>
+
+---
+
 ## 科学背景
 
 音乐是日常情绪调节中最有效的策略之一。**同质原理**——先让音乐匹配听者的心理生理状态，再将其引向目标状态——已获得受控实验的支持，相较被动聆听能显著提升积极情绪。从神经生物学的角度看，音乐可调节皮质醇水平、自主神经唤起以及奖赏环路。
