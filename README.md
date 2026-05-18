@@ -170,26 +170,16 @@ xcodebuild -scheme Cadence -destination 'platform=iOS Simulator,name=iPhone 17,O
 Clean Architecture · MVVM · Lightweight in-tree DI · Swift Concurrency + Combine · SwiftUI · AVPlayer
 
 ```
-Cadence/Cadence/
-├── Models/           Scene · SensorState · GeneratedSong · SongParams · MentalState …
-├── Domain/           SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator · LLMParamsBuilder
+Cadence/
+├── Models/      Scene · SensorState · GeneratedSong · SongParams · MentalState
+├── Domain/      SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator
 ├── Data/
-│   ├── Api/          GenerationRepository · MusicRepository · SongGenerationBackend · StreamingResult
-│   ├── Sensor/       HealthDataManager · HealthExtrasRepository · SleepRepository · LocationRepository · WeatherRepository · SensorStateCollector
-│   ├── Settings/     ApiSettings · ApiSettingsRepository
-│   ├── Adjustment/   UserAdjustmentRepository
-│   ├── Taste/        TasteMemoryRepository(Impl)
-│   ├── Session/      LastSessionParamsRepository
-│   └── Onboarding/   OnboardingRepository
-├── Audio/            MusicOrchestrator · AudioBufferManager · MusicPlayer · GenerationSemaphore
-├── DI/               DIContainer (in-tree Factory-style container)
-└── UI/
-    ├── Theme/        CadenceColor · CadenceFont
-    ├── Components/   PrimaryCadenceButton · StepDots · KeyboardObserver
-    ├── Onboarding/   Welcome · Permissions · ApiSetup · Ready · OnboardingFlowView
-    ├── Player/       PlayerScreen · PlayerSheetContent · AdjustmentPanel · AIReasoningPanel · WaveformVisualizer · ActivityPickerMenu
-    ├── Settings/     SettingsScreen · ApiSettingsForm · SettingsViewModel
-    └── Debug/        DebugScreen
+│   ├── Api/     GenerationRepository · MusicRepository · SongParams (Codable)
+│   ├── Sensor/  HealthKit · CoreLocation · Open-Meteo · sleep integrations
+│   └── …/       Settings · Adjustment · Taste · Session · Onboarding repositories
+├── Audio/       MusicOrchestrator · AudioBufferManager · MusicPlayer
+├── DI/          In-tree DIContainer (Factory-style)
+└── UI/         SwiftUI screens (Player, Settings, Debug, Onboarding) + ViewModels
 ```
 
 ---

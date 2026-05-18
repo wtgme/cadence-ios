@@ -170,26 +170,16 @@ xcodebuild -scheme Cadence -destination 'platform=iOS Simulator,name=iPhone 17,O
 Clean Architecture · MVVM · 轻量级内置依赖注入 · Swift Concurrency + Combine · SwiftUI · AVPlayer
 
 ```
-Cadence/Cadence/
-├── Models/           Scene · SensorState · GeneratedSong · SongParams · MentalState …
-├── Domain/           SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator · LLMParamsBuilder
+Cadence/
+├── Models/      Scene · SensorState · GeneratedSong · SongParams · MentalState
+├── Domain/      SceneDetector · SceneStateMachine · PromptBuilder · ReadinessCalculator
 ├── Data/
-│   ├── Api/          GenerationRepository · MusicRepository · SongGenerationBackend · StreamingResult
-│   ├── Sensor/       HealthDataManager · HealthExtrasRepository · SleepRepository · LocationRepository · WeatherRepository · SensorStateCollector
-│   ├── Settings/     ApiSettings · ApiSettingsRepository
-│   ├── Adjustment/   UserAdjustmentRepository
-│   ├── Taste/        TasteMemoryRepository(Impl)
-│   ├── Session/      LastSessionParamsRepository
-│   └── Onboarding/   OnboardingRepository
-├── Audio/            MusicOrchestrator · AudioBufferManager · MusicPlayer · GenerationSemaphore
-├── DI/               DIContainer（内置 Factory 风格容器）
-└── UI/
-    ├── Theme/        CadenceColor · CadenceFont
-    ├── Components/   PrimaryCadenceButton · StepDots · KeyboardObserver
-    ├── Onboarding/   Welcome · Permissions · ApiSetup · Ready · OnboardingFlowView
-    ├── Player/       PlayerScreen · PlayerSheetContent · AdjustmentPanel · AIReasoningPanel · WaveformVisualizer · ActivityPickerMenu
-    ├── Settings/     SettingsScreen · ApiSettingsForm · SettingsViewModel
-    └── Debug/        DebugScreen
+│   ├── Api/     GenerationRepository · MusicRepository · SongParams（Codable）
+│   ├── Sensor/  HealthKit · CoreLocation · Open-Meteo · 睡眠数据接入
+│   └── …/       Settings · Adjustment · Taste · Session · Onboarding 仓库
+├── Audio/       MusicOrchestrator · AudioBufferManager · MusicPlayer
+├── DI/          内置 DIContainer（Factory 风格）
+└── UI/         SwiftUI 界面（Player、Settings、Debug、Onboarding）+ ViewModel
 ```
 
 ---
