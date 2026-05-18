@@ -173,20 +173,6 @@ Cadence/Cadence/
     └── Debug/        DebugScreen
 ```
 
-### Android → iOS 对应关系
-
-| Android | iOS |
-|---|---|
-| Health Connect | HealthKit |
-| FusedLocationProviderClient | CoreLocation（CLLocationManager） |
-| Open-Meteo via Retrofit | Open-Meteo via URLSession |
-| OkHttp + Retrofit + Moshi | URLSession + Codable + JSONSerialization |
-| Kotlin Coroutines + Flow | Swift Concurrency + Combine + AsyncStream |
-| Hilt | 内置 `DIContainer`（无外部依赖） |
-| Jetpack Compose | SwiftUI |
-| Media3/ExoPlayer + 前台服务 | AVQueuePlayer + AVAudioSession + MPNowPlayingInfoCenter + UIBackgroundModes |
-| `local.properties` 构建期配置 | `Cadence/BuildConfig.swift`（内置） |
-
 ---
 
 <div align="center">

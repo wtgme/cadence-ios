@@ -173,20 +173,6 @@ Cadence/Cadence/
     └── Debug/        DebugScreen
 ```
 
-### Android → iOS mapping
-
-| Android | iOS |
-|---|---|
-| Health Connect | HealthKit |
-| FusedLocationProviderClient | CoreLocation (CLLocationManager) |
-| Open-Meteo via Retrofit | Open-Meteo via URLSession |
-| OkHttp + Retrofit + Moshi | URLSession + Codable + JSONSerialization |
-| Kotlin Coroutines + Flow | Swift Concurrency + Combine + AsyncStream |
-| Hilt | In-tree `DIContainer` (no external dependency) |
-| Jetpack Compose | SwiftUI |
-| Media3/ExoPlayer + foreground service | AVQueuePlayer + AVAudioSession + MPNowPlayingInfoCenter + UIBackgroundModes |
-| `local.properties` build-time config | `Cadence/BuildConfig.swift` (in-tree) |
-
 ---
 
 <div align="center">
