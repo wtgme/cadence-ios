@@ -8,6 +8,8 @@
 
 **English** · [简体中文](README.zh-CN.md)
 
+[Android](https://github.com/wtgme/cadence) · **iOS**
+
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
@@ -30,10 +32,10 @@ This is the iOS port of [`wtgme/cadence`](https://github.com/wtgme/cadence) (And
     <td align="center"><img src="screenshots/4.png" width="160"/><br/><sub><b>Ready</b><br/>Start your first session</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="screenshots/5.jpg" width="160"/><br/><sub><b>Scene Detection</b><br/>Auto-detected activity</sub></td>
-    <td align="center"><img src="screenshots/6.jpg" width="160"/><br/><sub><b>AI Reasoning</b><br/>Full inference chain</sub></td>
-    <td align="center"><img src="screenshots/7.jpg" width="160"/><br/><sub><b>Adjust Music</b><br/>Genre, energy, free-text prompt</sub></td>
-    <td align="center"><img src="screenshots/8.jpg" width="160"/><br/><sub><b>Adjust Scene</b><br/>Manual scene override</sub></td>
+    <td align="center"><img src="screenshots/5.png" width="160"/><br/><sub><b>Scene Detection</b><br/>Auto-detected activity</sub></td>
+    <td align="center"><img src="screenshots/6.png" width="160"/><br/><sub><b>AI Reasoning</b><br/>Full inference chain</sub></td>
+    <td align="center"><img src="screenshots/7.png" width="160"/><br/><sub><b>Adjust Music</b><br/>Genre, energy, free-text prompt</sub></td>
+    <td align="center"><img src="screenshots/8.png" width="160"/><br/><sub><b>Adjust Scene</b><br/>Manual scene override</sub></td>
   </tr>
 </table>
 

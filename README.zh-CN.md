@@ -8,6 +8,8 @@
 
 [English](README.md) · **简体中文**
 
+[Android](https://github.com/wtgme/cadence) · **iOS**
+
 [![平台](https://img.shields.io/badge/平台-iOS%2016%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
@@ -30,10 +32,10 @@
     <td align="center"><img src="screenshots/4.png" width="160"/><br/><sub><b>就绪</b><br/>开始你的第一次会话</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="screenshots/5.jpg" width="160"/><br/><sub><b>场景识别</b><br/>自动检测当前活动</sub></td>
-    <td align="center"><img src="screenshots/6.jpg" width="160"/><br/><sub><b>AI 推理</b><br/>完整推理链</sub></td>
-    <td align="center"><img src="screenshots/7.jpg" width="160"/><br/><sub><b>调整音乐</b><br/>风格、能量、自由文本提示</sub></td>
-    <td align="center"><img src="screenshots/8.jpg" width="160"/><br/><sub><b>调整场景</b><br/>手动切换场景</sub></td>
+    <td align="center"><img src="screenshots/5.png" width="160"/><br/><sub><b>场景识别</b><br/>自动检测当前活动</sub></td>
+    <td align="center"><img src="screenshots/6.png" width="160"/><br/><sub><b>AI 推理</b><br/>完整推理链</sub></td>
+    <td align="center"><img src="screenshots/7.png" width="160"/><br/><sub><b>调整音乐</b><br/>风格、能量、自由文本提示</sub></td>
+    <td align="center"><img src="screenshots/8.png" width="160"/><br/><sub><b>调整场景</b><br/>手动切换场景</sub></td>
   </tr>
 </table>
 
