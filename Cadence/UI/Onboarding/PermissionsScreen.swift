@@ -69,8 +69,8 @@ struct PermissionsScreen: View {
                             PermissionRow(
                                 icon: "location.fill",
                                 title: "Location & motion",
-                                bodyText: "Detects walking, running, transit. Lets the soundtrack switch with the scene.",
-                                tag: .required,
+                                bodyText: "Detects walking, running, transit for richer scene switching and local weather context. Cadence still works without it — heart rate alone drives generation.",
+                                tag: .optional,
                                 granted: locationGranted,
                             ) {
                                 if locationGranted {
@@ -112,11 +112,10 @@ struct PermissionsScreen: View {
                     }
                 }
                 PrimaryCadenceButton(
-                    text: locationGranted ? "Continue" : "Allow & continue",
+                    text: "Continue",
                     enabled: true,
                 ) {
-                    if locationGranted { onAllGranted() }
-                    else { locationProbe.request() }
+                    onAllGranted()
                 }
                 .padding(.horizontal, 28)
                 .padding(.vertical, 22)
