@@ -60,7 +60,7 @@ These effects depend critically on *fit* between musical properties and real-tim
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │               STEP 1 — Context Translation                  │
-│  LLM — any OpenAI-compatible chat endpoint                  │
+│  LLM — any compatible chat completions API                  │
 │  Biometric context → Mental state estimation                │
 │  (arousal · valence · stress · energy · focus)              │
 │  → Song parameters (genre tags · BPM · mood · intensity)    │
@@ -127,12 +127,12 @@ This design supports informed consent and user agency — principles central to 
 
 Cadence's two pipeline stages each call an HTTP endpoint, and both are configurable in-app via **API Settings** (gear icon → API SETTINGS). You can mix and match:
 
-- **Step 1 — LLM** (biometrics → song style): any OpenAI-compatible chat endpoint — [OpenRouter](https://openrouter.ai/), a local Ollama / vLLM server, or the bundled `cadence-api` LLM endpoint.
+- **Step 1 — LLM** (biometrics → song style): any compatible chat completions API — [OpenRouter](https://openrouter.ai/), a local Ollama / vLLM server, or the bundled `cadence-api` LLM endpoint.
 - **Step 2 — Music generation**: a text-to-music endpoint such as [MiniMax Music](https://www.minimax.io/), a self-hosted [SongGeneration](https://github.com/tencent-ailab/SongGeneration) server, or the bundled `cadence-api` music endpoint.
 
 ### Self-hosted reference server (optional)
 
-[**wtgme/cadence-api**](https://github.com/wtgme/cadence-api) packages both pipeline stages into a single FastAPI service: an OpenAI-compatible chat endpoint backed by your model of choice, plus a SongGeneration wrapper. Useful if you want full local control or a private GPU deployment. **It is not required** — any compatible third-party APIs work.
+[**wtgme/cadence-api**](https://github.com/wtgme/cadence-api) packages both pipeline stages into a single FastAPI service: a standard chat completions endpoint backed by your model of choice, plus a SongGeneration wrapper. Useful if you want full local control or a private GPU deployment. **It is not required** — any compatible third-party APIs work.
 
 ### Compile-time defaults
 

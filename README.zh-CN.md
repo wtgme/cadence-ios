@@ -60,7 +60,7 @@
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              第 1 步 —— 情境翻译                            │
-│  LLM —— 任意兼容 OpenAI 的 chat 接口                        │
+│  LLM —— 任意兼容的 chat completions 接口                    │
 │  生物特征情境 → 心理状态估计                                │
 │  （唤起度 · 效价 · 压力 · 能量 · 专注度）                   │
 │  → 歌曲参数（风格标签 · BPM · 情绪 · 强度）                 │
@@ -127,12 +127,12 @@ Cadence 通过传感器融合对你的活动情景进行分类，并据此塑造
 
 Cadence 的两个流水线阶段各自调用一个 HTTP 接口，两者都可在应用内通过 **API 设置**（齿轮图标 → API SETTINGS）进行配置。你可以自由搭配：
 
-- **第 1 步 —— LLM**（生物特征 → 歌曲风格）：任意兼容 OpenAI 的 chat 接口——[OpenRouter](https://openrouter.ai/)、本地 Ollama / vLLM 服务，或随附的 `cadence-api` LLM 接口。
+- **第 1 步 —— LLM**（生物特征 → 歌曲风格）：任意兼容的 chat completions 接口——[OpenRouter](https://openrouter.ai/)、本地 Ollama / vLLM 服务，或随附的 `cadence-api` LLM 接口。
 - **第 2 步 —— 音乐生成**：文本到音乐接口，例如 [MiniMax Music](https://www.minimax.io/)、自托管的 [SongGeneration](https://github.com/tencent-ailab/SongGeneration) 服务，或随附的 `cadence-api` 音乐接口。
 
 ### 自托管参考服务器（可选）
 
-[**wtgme/cadence-api**](https://github.com/wtgme/cadence-api) 将两个流水线阶段打包为单个 FastAPI 服务：一个由你选择的模型支持的 OpenAI 兼容 chat 接口，加上一个 SongGeneration 封装。若你想要完全的本地控制或私有 GPU 部署会很有用。**它并非必需**——任何兼容的第三方 API 都可使用。
+[**wtgme/cadence-api**](https://github.com/wtgme/cadence-api) 将两个流水线阶段打包为单个 FastAPI 服务：一个由你选择的模型支持的标准 chat completions 接口，加上一个 SongGeneration 封装。若你想要完全的本地控制或私有 GPU 部署会很有用。**它并非必需**——任何兼容的第三方 API 都可使用。
 
 ### 编译期默认值
 
