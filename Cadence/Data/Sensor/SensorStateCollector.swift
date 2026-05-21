@@ -16,6 +16,8 @@ final class SensorStateCollector: ObservableObject {
     let sleepRepository: SleepRepository
     let healthExtrasRepository: HealthExtrasRepository
     let weatherRepository: WeatherRepository
+    let motionActivityRepository: MotionActivityRepository
+    let workoutSessionRepository: WorkoutSessionRepository
     let readinessCalculator: ReadinessCalculator
 
     var healthDiagnostic: AnyPublisher<String?, Never> { healthDataManager.$diagnostic.eraseToAnyPublisher() }
@@ -29,6 +31,8 @@ final class SensorStateCollector: ObservableObject {
         sleepRepository: SleepRepository,
         healthExtrasRepository: HealthExtrasRepository,
         weatherRepository: WeatherRepository,
+        motionActivityRepository: MotionActivityRepository,
+        workoutSessionRepository: WorkoutSessionRepository,
         readinessCalculator: ReadinessCalculator
     ) {
         self.locationRepository = locationRepository
@@ -36,6 +40,8 @@ final class SensorStateCollector: ObservableObject {
         self.sleepRepository = sleepRepository
         self.healthExtrasRepository = healthExtrasRepository
         self.weatherRepository = weatherRepository
+        self.motionActivityRepository = motionActivityRepository
+        self.workoutSessionRepository = workoutSessionRepository
         self.readinessCalculator = readinessCalculator
 
         // Subscribe to each input; rebuild the snapshot when any value updates.
@@ -45,6 +51,8 @@ final class SensorStateCollector: ObservableObject {
         sleepRepository.$sleepScore.sink { [weak self] _ in self?.rebuild() }.store(in: &cancellables)
         healthExtrasRepository.$extras.sink { [weak self] _ in self?.rebuild() }.store(in: &cancellables)
         weatherRepository.$weather.sink { [weak self] _ in self?.rebuild() }.store(in: &cancellables)
+        motionActivityRepository.$activity.sink { [weak self] _ in self?.rebuild() }.store(in: &cancellables)
+        workoutSessionRepository.$activeType.sink { [weak self] _ in self?.rebuild() }.store(in: &cancellables)
     }
 
     private func rebuild() {
@@ -93,6 +101,8 @@ final class SensorStateCollector: ObservableObject {
         state.floorsClimbed = extras.floorsClimbed
         state.readinessScore = readiness.score
         state.readinessBreakdown = readiness.breakdown
+        state.motionActivity = motionActivityRepository.activity
+        state.activeWorkoutType = workoutSessionRepository.activeType
 
         // Suppress re-emission when only GPS noise changed.
         if let last = lastEmitted,
@@ -104,7 +114,9 @@ final class SensorStateCollector: ObservableObject {
            last.activityMinutesToday == state.activityMinutesToday,
            last.spo2 == state.spo2,
            last.stepsToday == state.stepsToday,
-           last.readinessScore == state.readinessScore {
+           last.readinessScore == state.readinessScore,
+           last.motionActivity == state.motionActivity,
+           last.activeWorkoutType == state.activeWorkoutType {
             return
         }
         lastEmitted = state
@@ -115,6 +127,8 @@ final class SensorStateCollector: ObservableObject {
         healthDataManager.start()
         healthExtrasRepository.start()
         locationRepository.start()
+        motionActivityRepository.start()
+        workoutSessionRepository.start()
         Task { await sleepRepository.refresh() }
 
         locationRepository.$locationData
@@ -129,6 +143,8 @@ final class SensorStateCollector: ObservableObject {
         healthDataManager.stop()
         healthExtrasRepository.stop()
         locationRepository.stop()
+        motionActivityRepository.stop()
+        workoutSessionRepository.stop()
     }
 
     func refreshAll() async {

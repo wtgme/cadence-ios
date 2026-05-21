@@ -403,6 +403,7 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Cadence does not write to HealthKit; this entry is required by HealthKit.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Continuous location lets Cadence keep adapting music to your activity in the background.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cadence detects activity (walking, running, commuting) and current weather, which shape generated music.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Cadence reads motion to detect walking, running and cycling indoors (gym, treadmill, stationary bike) so the soundtrack adapts to your activity.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = "audio location fetch processing";
@@ -441,6 +442,7 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Cadence does not write to HealthKit; this entry is required by HealthKit.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Continuous location lets Cadence keep adapting music to your activity in the background.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cadence detects activity (walking, running, commuting) and current weather, which shape generated music.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Cadence reads motion to detect walking, running and cycling indoors (gym, treadmill, stationary bike) so the soundtrack adapts to your activity.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = "audio location fetch processing";

@@ -16,10 +16,36 @@ final class SceneDetector {
     static let partyHrStrong: Int = 90
 
     func detect(_ state: SensorState) -> Scene {
+        // 1. Watch-reported workout is the highest-confidence signal — a sensor on
+        //    the wrist already classified the activity. Use it directly, regardless
+        //    of GPS speed (handles treadmill, stationary bike, rowing, elliptical).
+        if let workout = state.activeWorkoutType {
+            switch workout {
+            case .running, .hiit: return .running
+            case .cycling: return .cycling
+            case .walking: return .walking
+            case .rowing, .elliptical, .other: return .workout
+            }
+        }
+
+        // 2. Outdoor activity — GPS gives a reliable speed signal, prefer it.
         if state.speedKmh >= Self.commutingSpeedThreshold { return .commuting }
         if state.speedKmh >= Self.runningSpeedThreshold || state.heartRate > Self.runningHrThreshold { return .running }
         if state.speedKmh >= Self.cyclingSpeedThreshold { return .cycling }
         if state.speedKmh >= Self.walkingSpeedThreshold { return .walking }
+
+        // 3. Indoor / stationary path — GPS is ~0, so trust CoreMotion's on-device
+        //    classifier. Only treat running/cycling/walking as authoritative; the
+        //    stationary/automotive verdicts add no information over the fallthrough.
+        if state.speedKmh < Self.walkingSpeedThreshold, let motion = state.motionActivity {
+            switch motion {
+            case .running: return .running
+            case .cycling: return .cycling
+            case .walking: return .walking
+            case .stationary, .automotive, .unknown: break
+            }
+        }
+
         if isPartyContext(state) { return .party }
         if state.heartRate > Self.workoutHrThreshold { return .workout }
         if state.hourOfDay >= Self.focusHourStart && state.hourOfDay <= Self.focusHourEnd { return .focus }

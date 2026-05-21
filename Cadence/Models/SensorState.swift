@@ -25,4 +25,10 @@ struct SensorState: Equatable, Sendable {
     var floorsClimbed: Int = 0
     var readinessScore: Int = 0
     var readinessBreakdown: String = ""
+    /// On-device CoreMotion classification (walking/running/cycling/stationary). Used
+    /// by `SceneDetector` when GPS speed is ~0 (e.g., treadmill, stationary bike).
+    var motionActivity: MotionActivity? = nil
+    /// Activity type of an in-progress workout reported by a paired watch. Highest-
+    /// confidence override in `SceneDetector` when present.
+    var activeWorkoutType: ActiveWorkoutType? = nil
 }

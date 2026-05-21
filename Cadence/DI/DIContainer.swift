@@ -26,6 +26,8 @@ final class DIContainer {
     private(set) var sleepRepository: SleepRepository!
     private(set) var healthExtrasRepository: HealthExtrasRepository!
     private(set) var weatherRepository: WeatherRepository!
+    private(set) var motionActivityRepository: MotionActivityRepository!
+    private(set) var workoutSessionRepository: WorkoutSessionRepository!
     private(set) var sensorStateCollector: SensorStateCollector!
 
     private(set) var generationBackend: GenerationBackend!
@@ -57,12 +59,16 @@ final class DIContainer {
         sleepRepository = SleepRepository()
         healthExtrasRepository = HealthExtrasRepository()
         weatherRepository = WeatherRepository()
+        motionActivityRepository = MotionActivityRepository()
+        workoutSessionRepository = WorkoutSessionRepository()
         sensorStateCollector = SensorStateCollector(
             locationRepository: locationRepository,
             healthDataManager: healthDataManager,
             sleepRepository: sleepRepository,
             healthExtrasRepository: healthExtrasRepository,
             weatherRepository: weatherRepository,
+            motionActivityRepository: motionActivityRepository,
+            workoutSessionRepository: workoutSessionRepository,
             readinessCalculator: readinessCalculator,
         )
 
