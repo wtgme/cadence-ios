@@ -76,6 +76,14 @@ final class DIContainer {
         let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
             .appendingPathComponent("audio", isDirectory: true)
         try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        // Sweep stale .mp3 files left over from a previous run that didn't exit gracefully
+        // (force-quit, crash, OS background-kill). On fresh launch the buffer is always
+        // empty, so anything still on disk is orphaned — safe to delete unconditionally.
+        if let files = try? FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil) {
+            for file in files where file.pathExtension == "mp3" {
+                try? FileManager.default.removeItem(at: file)
+            }
+        }
 
         generationBackend = SongGenerationBackend(cacheDir: cacheDir, apiSettings: apiSettingsRepository)
         generationRepository = MusicRepository(
