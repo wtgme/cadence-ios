@@ -10,11 +10,20 @@
 
 [Android](https://github.com/wtgme/cadence) · **iOS**
 
+[![App Store](https://img.shields.io/badge/App%20Store-Available-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/us/app/cadence-ai-music/id6770579621)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 
 **Cadence** continuously reads your physiological state and generates personalised instrumental music in real time — grounded in the *iso-principle*: matching music to your current state before gradually steering it toward a desired emotional target.
+
+---
+
+### Now live on the App Store
+
+<a href="https://apps.apple.com/us/app/cadence-ai-music/id6770579621"><img src="screenshots/app-store-qr.png" width="160" alt="App Store QR code"/></a>
+
+[Download on the App Store](https://apps.apple.com/us/app/cadence-ai-music/id6770579621) · or scan the QR with your iPhone camera
 
 </div>
 
@@ -188,6 +197,6 @@ Clean Architecture · MVVM · Lightweight in-tree DI · Swift Concurrency + Comb
 
 <div align="center">
 
-*Built to match the Android version's behavior. See [`wtgme/cadence`](https://github.com/wtgme/cadence) for the Android source.*
+*Live on the App Store. Built to match the Android version's behavior — see [`wtgme/cadence`](https://github.com/wtgme/cadence) for the Android source.*
 
 </div>

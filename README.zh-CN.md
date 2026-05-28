@@ -10,11 +10,20 @@
 
 [Android](https://github.com/wtgme/cadence) · **iOS**
 
+[![App Store](https://img.shields.io/badge/App%20Store-已上线-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/us/app/cadence-ai-music/id6770579621)
 [![平台](https://img.shields.io/badge/平台-iOS%2016%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 
 **Cadence** 持续读取你的生理状态，并基于 *同质原理*（iso-principle）实时生成个性化的器乐音乐——先匹配你当前的状态，再逐步将其引导至期望的情绪目标。
+
+---
+
+### App Store 现已上线
+
+<a href="https://apps.apple.com/us/app/cadence-ai-music/id6770579621"><img src="screenshots/app-store-qr.png" width="160" alt="App Store 二维码"/></a>
+
+[前往 App Store 下载](https://apps.apple.com/us/app/cadence-ai-music/id6770579621) · 或使用 iPhone 相机扫描二维码
 
 </div>
 
@@ -188,6 +197,6 @@ Clean Architecture · MVVM · 轻量级内置依赖注入 · Swift Concurrency +
 
 <div align="center">
 
-*行为与 Android 版本保持一致。Android 源码见 [`wtgme/cadence`](https://github.com/wtgme/cadence)。*
+*已在 App Store 上线。行为与 Android 版本保持一致——Android 源码见 [`wtgme/cadence`](https://github.com/wtgme/cadence)。*
 
 </div>
