@@ -92,6 +92,14 @@ final class MusicOrchestrator: ObservableObject {
         playbackStarted = true
         DispatchQueue.main.async { self.playbackState = .buffering }
 
+        // Start the player up front so its feed loop begins now — it suspends on
+        // bufferManager.takeNext() until the first chunk arrives, and during that
+        // suspend MusicPlayer.startWelcomePad() plays the welcome pad. Without
+        // this, the player would only start after the first chunk is ready, at
+        // which point hasBufferedAudio is true and the pad is skipped — leaving
+        // the cold-start wait silent.
+        DispatchQueue.main.async { self.musicPlayer.startPlayback() }
+
         Task { [weak self] in
             guard let self else { return }
             Self.log.debug("startPlayback: refreshing biometrics before generation")
@@ -100,12 +108,10 @@ final class MusicOrchestrator: ObservableObject {
             self.lastGeneratedHr = self.currentSensorState.heartRate
             await self.bufferManager.prime(sensorState: self.currentSensorState, scene: self.currentScene)
 
-            // Wait for first chunk then start playback.
+            // Flip the UI from buffering to playing once real audio is available.
+            // The pad has been playing during this wait via the player's feed task.
             await self.waitForChunks(minimum: 1)
-            await MainActor.run {
-                self.playbackState = .playing
-                self.musicPlayer.startPlayback()
-            }
+            await MainActor.run { self.playbackState = .playing }
             self.subscribeChunksReady()
         }
     }

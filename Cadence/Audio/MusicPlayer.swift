@@ -10,6 +10,8 @@ final class MusicPlayer {
 
     private static let log = Logger(subsystem: "io.cadence.music", category: "MusicPlayer")
     private static let maxHistory = 5
+    private static let welcomePadVolume: Float = 0.30
+    private static let welcomeFadeMs: Int = 600
 
     private let bufferManager: AudioBufferManager
     private let player = AVQueuePlayer()
@@ -17,6 +19,7 @@ final class MusicPlayer {
     private var statusObserver: NSKeyValueObservation?
     private var rateObserver: NSKeyValueObservation?
     private var endObserver: NSObjectProtocol?
+    private var interruptionObserver: NSObjectProtocol?
     private var positionTimer: Timer?
 
     /// Files queued into AVPlayer in order. Head is the currently-playing item.
@@ -27,6 +30,11 @@ final class MusicPlayer {
     private var feedTask: Task<Void, Never>?
     private var isPlaying = false
 
+    /// Looping low-volume pad played while the first real song is generating.
+    /// Mirrors Android's MusicPlayerService.maybeStartWelcomePad().
+    private var padPlayer: AVQueuePlayer?
+    private var padLooper: AVPlayerLooper?
+
     init(bufferManager: AudioBufferManager) {
         self.bufferManager = bufferManager
     }
@@ -34,13 +42,22 @@ final class MusicPlayer {
     func startPlayback() {
         configureAudioSession()
         registerRemoteCommands()
+        setupInterruptionHandling()
         isPlaying = true
         feedTask?.cancel()
+
+        // Skip the welcome pad when pre-buffered audio is already available — go straight to music.
+        let padStarted = !bufferManager.hasBufferedAudio && startWelcomePad()
+
         feedTask = Task { [weak self] in
             guard let self else { return }
             guard let first = await self.bufferManager.takeNext() else {
                 Self.log.warning("Buffer returned nil — no audio to play")
+                if padStarted { await self.fadeOutWelcomePad() }
                 return
+            }
+            if padStarted {
+                await self.fadeOutWelcomePad()
             }
             await MainActor.run { self.enqueueFile(first) }
         }
@@ -65,6 +82,14 @@ final class MusicPlayer {
             NotificationCenter.default.removeObserver(observer)
             endObserver = nil
         }
+        if let observer = interruptionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            interruptionObserver = nil
+        }
+        padPlayer?.pause()
+        padPlayer?.removeAllItems()
+        padPlayer = nil
+        padLooper = nil
         player.pause()
         player.removeAllItems()
         for url in enqueuedFiles { try? FileManager.default.removeItem(at: url) }
@@ -138,6 +163,40 @@ final class MusicPlayer {
         }
     }
 
+    private func setupInterruptionHandling() {
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            self?.handleAudioSessionInterruption(notification)
+        }
+    }
+
+    private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+        else { return }
+
+        switch type {
+        case .began:
+            break // system pauses AVQueuePlayer automatically
+        case .ended:
+            let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            guard options.contains(.shouldResume) else { return }
+            do {
+                try AVAudioSession.sharedInstance().setActive(true)
+                if isPlaying { player.play() }
+            } catch {
+                Self.log.error("Audio session reactivation failed after interruption: \(error.localizedDescription)")
+            }
+        @unknown default:
+            break
+        }
+    }
+
     private func registerRemoteCommands() {
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.addTarget { [weak self] _ in
@@ -186,6 +245,44 @@ final class MusicPlayer {
             guard let next = await self.bufferManager.takeNext() else { return }
             await MainActor.run { self.enqueueFile(next) }
         }
+    }
+
+    /// Plays `welcome_pad.mp3` from the bundle on loop at low volume while the
+    /// first real song is generating. Returns true if the pad was started.
+    /// Mirrors Android's MusicPlayerService.maybeStartWelcomePad().
+    private func startWelcomePad() -> Bool {
+        guard padPlayer == nil else { return false }
+        guard let url = Bundle.main.url(forResource: "welcome_pad", withExtension: "mp3") else {
+            Self.log.debug("No welcome_pad asset — starting silently")
+            return false
+        }
+        let item = AVPlayerItem(url: url)
+        let p = AVQueuePlayer()
+        let looper = AVPlayerLooper(player: p, templateItem: item)
+        p.volume = Self.welcomePadVolume
+        p.play()
+        self.padPlayer = p
+        self.padLooper = looper
+        Self.log.debug("Welcome pad playing (volume=\(Self.welcomePadVolume))")
+        return true
+    }
+
+    /// Fades the welcome pad to zero over `welcomeFadeMs`, then stops it.
+    /// Called once the first real chunk has been pulled from the buffer, immediately
+    /// before it is enqueued into the main player.
+    private func fadeOutWelcomePad() async {
+        guard let p = padPlayer else { return }
+        let steps = 10
+        let stepNs = UInt64(Self.welcomeFadeMs * 1_000_000 / steps)
+        let startVol = p.volume
+        for i in 1...steps {
+            try? await Task.sleep(nanoseconds: stepNs)
+            p.volume = startVol * Float(1.0 - Double(i) / Double(steps))
+        }
+        p.pause()
+        p.removeAllItems()
+        padPlayer = nil
+        padLooper = nil
     }
 
     private func startPositionUpdates() {
