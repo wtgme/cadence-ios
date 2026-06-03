@@ -15,6 +15,8 @@
 [![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 
+<img src="screenshots/cadence-banner.png" alt="Cadence overview: iso-principle science, two-step AI pipeline, scene-aware output" width="100%"/>
+
 **Cadence** continuously reads your physiological state and generates personalised instrumental music in real time — grounded in the *iso-principle*: matching music to your current state before gradually steering it toward a desired emotional target.
 
 ---
