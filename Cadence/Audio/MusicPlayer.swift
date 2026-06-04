@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import MediaPlayer
+import UIKit
 import Combine
 import OSLog
 
@@ -28,6 +29,7 @@ final class MusicPlayer {
     private var playedFiles: [URL] = []
 
     private var feedTask: Task<Void, Never>?
+    private var routeChangeObserver: NSObjectProtocol?
     private var isPlaying = false
 
     /// Looping low-volume pad played while the first real song is generating.
@@ -42,9 +44,14 @@ final class MusicPlayer {
     func startPlayback() {
         configureAudioSession()
         registerRemoteCommands()
-        setupInterruptionHandling()
+        setupAudioSessionObservers()
         isPlaying = true
         feedTask?.cancel()
+
+        if let old = endObserver {
+            NotificationCenter.default.removeObserver(old)
+            endObserver = nil
+        }
 
         // Skip the welcome pad when pre-buffered audio is already available — go straight to music.
         let padStarted = !bufferManager.hasBufferedAudio && startWelcomePad()
@@ -85,6 +92,10 @@ final class MusicPlayer {
         if let observer = interruptionObserver {
             NotificationCenter.default.removeObserver(observer)
             interruptionObserver = nil
+        }
+        if let observer = routeChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            routeChangeObserver = nil
         }
         padPlayer?.pause()
         padPlayer?.removeAllItems()
@@ -163,13 +174,27 @@ final class MusicPlayer {
         }
     }
 
-    private func setupInterruptionHandling() {
+    private func setupAudioSessionObservers() {
+        if let old = interruptionObserver {
+            NotificationCenter.default.removeObserver(old)
+        }
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance(),
             queue: .main
         ) { [weak self] notification in
             self?.handleAudioSessionInterruption(notification)
+        }
+
+        if let old = routeChangeObserver {
+            NotificationCenter.default.removeObserver(old)
+        }
+        routeChangeObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            self?.handleAudioRouteChange(notification)
         }
     }
 
@@ -197,13 +222,40 @@ final class MusicPlayer {
         }
     }
 
+    private func handleAudioRouteChange(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue)
+        else { return }
+
+        if reason == .oldDeviceUnavailable {
+            // Headphones or BT device removed — system already paused AVPlayer.
+            // Mark intent as paused so the queue feed doesn't auto-restart,
+            // matching iOS standard behavior (user must tap play to resume on speaker).
+            isPlaying = false
+            updateNowPlaying()
+        }
+    }
+
     private func registerRemoteCommands() {
         let center = MPRemoteCommandCenter.shared()
+        // Remove stale targets that pile up when startPlayback() is called more than once.
+        center.playCommand.removeTarget(nil)
+        center.pauseCommand.removeTarget(nil)
+        center.nextTrackCommand.removeTarget(nil)
+        center.previousTrackCommand.removeTarget(nil)
+
         center.playCommand.addTarget { [weak self] _ in
-            self?.player.play(); return .success
+            guard let self else { return .commandFailed }
+            self.isPlaying = true
+            self.player.play()
+            return .success
         }
         center.pauseCommand.addTarget { [weak self] _ in
-            self?.player.pause(); return .success
+            guard let self else { return .commandFailed }
+            self.isPlaying = false
+            self.player.pause()
+            return .success
         }
         center.nextTrackCommand.addTarget { [weak self] _ in
             self?.skipToNext(); return .success
@@ -240,7 +292,18 @@ final class MusicPlayer {
     }
 
     private func feedNextChunk() {
+        // Request background execution time so iOS doesn't suspend the app during
+        // the brief window between the current song ending and the next one being
+        // enqueued. Without this, a slow generation response (~30-90s) on the
+        // transition can cause the process to freeze mid-fetch.
+        var bgTask = UIBackgroundTaskIdentifier.invalid
+        bgTask = UIApplication.shared.beginBackgroundTask(withName: "MusicTransition") {
+            // Expiry: iOS is about to suspend — end the token so the system doesn't
+            // terminate the app with a watchdog exception.
+            UIApplication.shared.endBackgroundTask(bgTask)
+        }
         Task { [weak self] in
+            defer { UIApplication.shared.endBackgroundTask(bgTask) }
             guard let self else { return }
             guard let next = await self.bufferManager.takeNext() else { return }
             await MainActor.run { self.enqueueFile(next) }
@@ -309,7 +372,6 @@ final class MusicPlayer {
     }
 }
 
-// Helper to clear now-playing without importing UIKit at the top level.
 private func UIApplicationClearNowPlayingInfo() {
     MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
 }
